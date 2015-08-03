@@ -60,8 +60,8 @@ public class ButtonScreen implements Blueprint {
         }
 
         public void onButtonClicked() {
-//            ((Flow)((View)getView()).getContext().getSystemService(FlowCoordinator.FLOW_SERVICE)).goTo(new MessageScreen());
-            ((Flow)((View)getView()).getContext().getSystemService(FlowCoordinator.FLOW_SERVICE)).replaceTo(new MessageScreen());
+            ((Flow)((View)getView()).getContext().getSystemService(FlowCoordinator.FLOW_SERVICE)).goTo(new MessageScreen());
+//            ((Flow)((View)getView()).getContext().getSystemService(FlowCoordinator.FLOW_SERVICE)).replaceTo(new MessageScreen());
         }
     }
 } // end ButtonScreen

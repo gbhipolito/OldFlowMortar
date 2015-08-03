@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -25,28 +26,30 @@ public class FlowCoordinator implements Flow.Listener {
 
     private final Flow flow;
     private ViewGroup containerView;
-    private Blueprint currentScreen;
 
     private FlowCoordinator(ViewGroup containerView, Blueprint firstScreen) {
+        Log.e("asdf", "FlowCoordinator constructor");
         Backstack backstack = Backstack.fromUpChain(firstScreen);
-        Flow flow = new Flow(backstack, this);
-
-        this.flow = flow;
+        this.flow = new Flow(backstack, this);
         this.containerView = containerView;
 
-        currentScreen = firstScreen;
-        this.flow.goTo(currentScreen);
+//        this.flow.goTo(firstScreen);
+        showScreen(firstScreen, null, null);
     }
 
     public static FlowCoordinator create(ViewGroup containerView, Blueprint firstScreen, CoordinatorHolder coordinatorHolder, boolean isConfigChanging) {
+        Log.e("asdf", "FlowCoordinator create");
         FlowCoordinator coordinator = coordinatorHolder.getFlowCoordinator();
         if(isConfigChanging && coordinator != null) {
+            Log.e("asdf", "FlowCoordinator configchange create");
             // if just changing config (e.g. rotation), just update containerView
             coordinator = coordinator.withContainerView(containerView);
-            coordinator.flow.goTo(coordinator.currentScreen);
-            return coordinator;
+            coordinator.showScreen((Blueprint)coordinator.flow.getBackstack().current().getScreen(), null, null);
+
+            return coordinator.withContainerView(containerView);
         }
         else {
+            Log.e("asdf", "FlowCoordinator new create");
             return new FlowCoordinator(containerView, firstScreen);
         }
     }
@@ -56,6 +59,7 @@ public class FlowCoordinator implements Flow.Listener {
      */
     @Override
     public void go(Backstack backstack, Flow.Direction direction) {
+        Log.e("asdf", "FlowCoordinator go");
         Blueprint newScreen = (Blueprint) backstack.current().getScreen();
 
         Blueprint oldScreen = null;
@@ -66,12 +70,11 @@ public class FlowCoordinator implements Flow.Listener {
             oldScreen = (Blueprint) oldEntry.getScreen();
         }
 
-        currentScreen = newScreen;
         showScreen(newScreen, oldScreen, direction);
     }
 
     private void showScreen(Blueprint newScreen, Blueprint oldScreen, final Flow.Direction direction) {
-
+        Log.e("asdf", "FlowCoordinator showScreen");
 //        // Cancel previous transition and set end values
 //        if (screenTransition != null) {
 //            screenTransition.end();

@@ -63,6 +63,12 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        activityScope.onSaveInstanceState(outState);
+    }
+
+    @Override
     public Object getSystemService(String name) {
         Log.e("asdf", "activity getsystemservice: " + name);
         if(Mortar.isScopeSystemService(name)) {
