@@ -9,7 +9,7 @@ import android.widget.TextView;
 public class MessageView extends TextView {
     public MessageView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        Log.e("asdf", "MessageView constructor");
+        Log.e("asdf", "MessageView constructor: " + this);
     }
 
     @Override

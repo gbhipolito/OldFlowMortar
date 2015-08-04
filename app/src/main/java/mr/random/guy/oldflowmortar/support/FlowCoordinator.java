@@ -1,9 +1,6 @@
 package mr.random.guy.oldflowmortar.support;
 
-import android.animation.Animator;
-import android.animation.AnimatorSet;
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,37 +8,35 @@ import android.view.ViewGroup;
 import com.google.common.collect.Lists;
 
 import java.util.List;
-import java.util.Objects;
 
 import flow.Backstack;
 import flow.Flow;
-import flow.Layouts;
 import mortar.Blueprint;
 import mortar.Mortar;
 import mortar.MortarScope;
-import mr.random.guy.oldflowmortar.screens.ButtonScreen;
 
 public class FlowCoordinator implements Flow.Listener {
     public static final String FLOW_SERVICE = "FLOW_SERVICE";
 
+    private final Context activityContext;
     private final Flow flow;
     private ViewGroup containerView;
 
-    private FlowCoordinator(ViewGroup containerView, Blueprint firstScreen) {
+    private FlowCoordinator(ViewGroup containerView, Blueprint firstScreen, Context context) {
         Log.e("asdf", "FlowCoordinator constructor");
-        Backstack backstack = Backstack.fromUpChain(firstScreen);
+        Backstack backstack = Backstack.single(firstScreen);
         this.flow = new Flow(backstack, this);
         this.containerView = containerView;
-
+        this.activityContext = context;
 //        this.flow.goTo(firstScreen);
         showScreen(firstScreen, null, null);
     }
 
-    public static FlowCoordinator create(ViewGroup containerView, Blueprint firstScreen, CoordinatorHolder coordinatorHolder, boolean isConfigChanging) {
+    public static FlowCoordinator create(ViewGroup containerView, Blueprint firstScreen, CoordinatorHolder coordinatorHolder, boolean isConfigChanging, Context activityContext) {
         Log.e("asdf", "FlowCoordinator create");
         FlowCoordinator coordinator = coordinatorHolder.getFlowCoordinator();
         if(isConfigChanging && coordinator != null) {
-            Log.e("asdf", "FlowCoordinator configchange create");
+            Log.e("asdf", "FlowCoordinator configchange reuse create");
             // if just changing config (e.g. rotation), just update containerView
             coordinator = coordinator.withContainerView(containerView);
             coordinator.showScreen((Blueprint)coordinator.flow.getBackstack().current().getScreen(), null, null);
@@ -50,7 +45,7 @@ public class FlowCoordinator implements Flow.Listener {
         }
         else {
             Log.e("asdf", "FlowCoordinator new create");
-            return new FlowCoordinator(containerView, firstScreen);
+            return new FlowCoordinator(containerView, firstScreen, activityContext);
         }
     }
 
@@ -68,21 +63,23 @@ public class FlowCoordinator implements Flow.Listener {
             Backstack.Entry oldEntry = entries.get(entries.size() - 2);
             //noinspection unchecked
             oldScreen = (Blueprint) oldEntry.getScreen();
+            Log.e("asdf", "FlowCoordinator go oldScreen: " + oldScreen);
         }
 
         showScreen(newScreen, oldScreen, direction);
     }
 
     private void showScreen(Blueprint newScreen, Blueprint oldScreen, final Flow.Direction direction) {
-        Log.e("asdf", "FlowCoordinator showScreen");
+        Log.e("asdf", "FlowCoordinator showScreen| new: " + newScreen + " old: " + oldScreen + " dir: " + direction);
 //        // Cancel previous transition and set end values
 //        if (screenTransition != null) {
 //            screenTransition.end();
 //        }
 
         final View oldChild = getCurrentChild(containerView);
+        Log.e("asdf", "FlowCoordinator showScreen oldChild: " + oldChild);
 
-//        if (destroyOldScope(newScreen, oldChild)) {
+        if(destroyOldScope(newScreen, oldChild)) {
 //            storeViewState(oldChild, oldScreen);
             final View newChild = createNewChildView(newScreen);
 
@@ -92,13 +89,13 @@ public class FlowCoordinator implements Flow.Listener {
 //                    case FORWARD:
 //                        // Load animations from Transition annotations, store them into backstack and set them to views
 //                        storeTransitions(oldScreen, newScreen);
-//                        transitions = Transitions.forward(context, newScreen);
+//                        transitions = Transitions.forward(activityContext, newScreen);
 //                        break;
 //                    case BACKWARD:
 //                        if (newScreen instanceof TransitionScreen) {
 //                            // Try to load animations from a screen and set them
 //                            int[] transitionIds = ((TransitionScreen) newScreen).getTransitions();
-//                            transitions = Transitions.backward(context, transitionIds);
+//                            transitions = Transitions.backward(activityContext, transitionIds);
 //                        }
 //                        break;
 //                    case REPLACE:
@@ -107,7 +104,7 @@ public class FlowCoordinator implements Flow.Listener {
 //                }
 //            }
 
-//            if (oldChild != null) {
+            if(oldChild != null) {
 //                // Settings animator for each view and removing the old view
 //                // after animation ends
 //                if (transitions != null) {
@@ -125,7 +122,7 @@ public class FlowCoordinator implements Flow.Listener {
                     // remove view immediately if no transitions to run
                     containerView.removeView(oldChild);
 //                }
-//            }
+            } // end if(oldChild != null)
 
         containerView.addView(newChild, 0);
 
@@ -144,9 +141,9 @@ public class FlowCoordinator implements Flow.Listener {
 //                    }
 //                });
 //            }
-//        }
+        } // end if(destroyOldScope(newScreen, oldChild))
 
-    }
+    } // end showScreen
 
     protected View getCurrentChild(final ViewGroup containerView) {
         if (containerView.getChildCount() > 0) {
@@ -157,6 +154,25 @@ public class FlowCoordinator implements Flow.Listener {
     }
 
     /**
+     * Destroys old child scope if it was different than the new one. Returns true
+     * if successful
+     */
+    protected boolean destroyOldScope(Blueprint newScreen, View oldChild) {
+        MortarScope myScope = Mortar.getScope(activityContext);
+        if (oldChild != null) {
+            MortarScope oldChildScope = Mortar.getScope(oldChild.getContext());
+            Log.e("asdf", "FlowCoordinator oldChildScope: " + oldChildScope.getName() + " newScreenScope: " + newScreen.getMortarScopeName());
+            if (oldChildScope.getName().equals(newScreen.getMortarScopeName())) {
+                Log.e("asdf", "FlowCoordinator destroyOldScope false");
+                return false;
+            }
+            myScope.destroyChild(oldChildScope);
+        }
+        Log.e("asdf", "FlowCoordinator destroyOldScope true");
+        return true;
+    }
+
+    /**
      * return this same instance of FlowCoordinator applying the given containerView
      */
     public FlowCoordinator withContainerView(ViewGroup containerView) {
@@ -164,13 +180,15 @@ public class FlowCoordinator implements Flow.Listener {
         return this;
     }
 
-    protected View createNewChildView(Blueprint screen) {
-//        MortarScope myScope = Mortar.getScope(context);
-//        MortarScope newChildScope = myScope.requireChild(screen);
-//        Context childContext = newChildScope.createContext(context);
-        View newChild = ScreenInflater.createView(containerView.getContext(), screen, containerView);
-//        newChild.setId(viewId);
-        return newChild;
+    /**
+     * Creates and inflates a new child View from a given screen
+     */
+    protected View createNewChildView(Blueprint newScreen) {
+        Log.e("asdf", "FlowCoordinator createNewChildView");
+        MortarScope myScope = Mortar.getScope(activityContext);
+        MortarScope newChildScope = myScope.requireChild(newScreen);
+        Context childContext = newChildScope.createContext(activityContext);
+        return ScreenInflater.createView(childContext, newScreen, containerView);
     }
 
     public Flow getFlow() {

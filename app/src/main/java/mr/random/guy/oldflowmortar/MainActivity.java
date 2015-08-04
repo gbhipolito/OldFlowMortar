@@ -12,6 +12,7 @@ import mortar.Blueprint;
 import mortar.Mortar;
 import mortar.MortarActivityScope;
 import mortar.MortarScope;
+import mr.random.guy.oldflowmortar.screens.ActivityScreen;
 import mr.random.guy.oldflowmortar.screens.ButtonScreen;
 import mr.random.guy.oldflowmortar.support.CoordinatorHolder;
 import mr.random.guy.oldflowmortar.support.FlowCoordinator;
@@ -29,14 +30,13 @@ public class MainActivity extends Activity {
         ViewGroup containerView = (ViewGroup)findViewById(R.id.container);
 
         MortarScope parentScope = Mortar.getScope(getApplicationContext());
-        Blueprint firstScreen = new ButtonScreen();
-        activityScope = Mortar.requireActivityScope(parentScope, firstScreen);
+        activityScope = Mortar.requireActivityScope(parentScope, new ActivityScreen());
         activityScope.onCreate(savedInstanceState);
 
 //        Mortar.inject(this, this);
 
         CoordinatorHolder coordinatorHolder = (CoordinatorHolder)getApplication();
-        coordinatorHolder.setFlowCoordinator(FlowCoordinator.create(containerView, firstScreen, coordinatorHolder, (savedInstanceState != null)));
+        coordinatorHolder.setFlowCoordinator(FlowCoordinator.create(containerView, new ButtonScreen(), coordinatorHolder, (savedInstanceState != null), this));
 
     } // end onCreate
 

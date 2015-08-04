@@ -18,7 +18,7 @@ public class ButtonView extends Button {
 
     public ButtonView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        Log.e("asdf", "ButtonView constructor");
+        Log.e("asdf", "ButtonView constructor: " + this);
         Mortar.inject(context, this);
     }
 

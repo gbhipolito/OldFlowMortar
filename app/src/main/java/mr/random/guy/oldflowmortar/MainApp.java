@@ -8,7 +8,6 @@ import mortar.Mortar;
 import mortar.MortarScope;
 import mr.random.guy.oldflowmortar.support.CoordinatorHolder;
 import mr.random.guy.oldflowmortar.support.FlowCoordinator;
-import mr.random.guy.oldflowmortar.support.MainModule;
 
 public class MainApp extends Application implements CoordinatorHolder {
     private FlowCoordinator flowCoordinator;

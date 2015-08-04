@@ -1,4 +1,4 @@
-<RelativeLayout
+<mr.random.guy.oldflowmortar.views.ActivityView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
@@ -11,4 +11,4 @@
     tools:context=".MainActivity">
 
 
-</RelativeLayout>
+</mr.random.guy.oldflowmortar.views.ActivityView>
