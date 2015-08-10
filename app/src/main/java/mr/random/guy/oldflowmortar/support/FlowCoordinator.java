@@ -11,7 +11,6 @@ import java.util.List;
 
 import flow.Backstack;
 import flow.Flow;
-import mortar.Blueprint;
 import mortar.Mortar;
 import mortar.MortarScope;
 
@@ -22,9 +21,9 @@ public class FlowCoordinator implements Flow.Listener {
     private final Flow flow;
     private ViewGroup containerView;
 
-    private FlowCoordinator(ViewGroup containerView, Blueprint firstScreen, Context context) {
+    private FlowCoordinator(ViewGroup containerView, Screen firstScreen, Context context) {
         Log.e("asdf", "FlowCoordinator constructor");
-        Backstack backstack = Backstack.single(firstScreen);
+        Backstack backstack = Backstack.fromUpChain(firstScreen);
         this.flow = new Flow(backstack, this);
         this.containerView = containerView;
         this.activityContext = context;
@@ -32,14 +31,14 @@ public class FlowCoordinator implements Flow.Listener {
         showScreen(firstScreen, null, null);
     }
 
-    public static FlowCoordinator create(ViewGroup containerView, Blueprint firstScreen, CoordinatorHolder coordinatorHolder, boolean isConfigChanging, Context activityContext) {
+    public static FlowCoordinator create(ViewGroup containerView, Screen firstScreen, CoordinatorHolder coordinatorHolder, boolean isConfigChanging, Context activityContext) {
         Log.e("asdf", "FlowCoordinator create");
         FlowCoordinator coordinator = coordinatorHolder.getFlowCoordinator();
         if(isConfigChanging && coordinator != null) {
             Log.e("asdf", "FlowCoordinator configchange reuse create");
             // if just changing config (e.g. rotation), just update containerView
             coordinator = coordinator.withContainerView(containerView);
-            coordinator.showScreen((Blueprint)coordinator.flow.getBackstack().current().getScreen(), null, null);
+            coordinator.showScreen((Screen)coordinator.flow.getBackstack().current().getScreen(), null, null);
 
             return coordinator.withContainerView(containerView);
         }
@@ -55,21 +54,21 @@ public class FlowCoordinator implements Flow.Listener {
     @Override
     public void go(Backstack backstack, Flow.Direction direction) {
         Log.e("asdf", "FlowCoordinator go");
-        Blueprint newScreen = (Blueprint) backstack.current().getScreen();
+        Screen newScreen = (Screen)backstack.current().getScreen();
 
-        Blueprint oldScreen = null;
+        Screen oldScreen = null;
         if (direction == Flow.Direction.FORWARD && backstack.size() > 1) {
             List<Backstack.Entry> entries = Lists.newArrayList(backstack.reverseIterator());
             Backstack.Entry oldEntry = entries.get(entries.size() - 2);
             //noinspection unchecked
-            oldScreen = (Blueprint) oldEntry.getScreen();
+            oldScreen = (Screen) oldEntry.getScreen();
             Log.e("asdf", "FlowCoordinator go oldScreen: " + oldScreen);
         }
 
         showScreen(newScreen, oldScreen, direction);
     }
 
-    private void showScreen(Blueprint newScreen, Blueprint oldScreen, final Flow.Direction direction) {
+    private void showScreen(Screen newScreen, Screen oldScreen, final Flow.Direction direction) {
         Log.e("asdf", "FlowCoordinator showScreen| new: " + newScreen + " old: " + oldScreen + " dir: " + direction);
 //        // Cancel previous transition and set end values
 //        if (screenTransition != null) {
@@ -157,11 +156,11 @@ public class FlowCoordinator implements Flow.Listener {
      * Destroys old child scope if it was different than the new one. Returns true
      * if successful
      */
-    protected boolean destroyOldScope(Blueprint newScreen, View oldChild) {
+    protected boolean destroyOldScope(Screen newScreen, View oldChild) {
         MortarScope myScope = Mortar.getScope(activityContext);
         if (oldChild != null) {
             MortarScope oldChildScope = Mortar.getScope(oldChild.getContext());
-            Log.e("asdf", "FlowCoordinator oldChildScope: " + oldChildScope.getName() + " newScreenScope: " + newScreen.getMortarScopeName());
+            Log.e("asdf", "FlowCoordinator oldChildScope: " + oldChildScope.getName() + " newScreenScope: " + newScreen.getMortarScopeName() + " " + newScreen);
             if (oldChildScope.getName().equals(newScreen.getMortarScopeName())) {
                 Log.e("asdf", "FlowCoordinator destroyOldScope false");
                 return false;
@@ -183,7 +182,7 @@ public class FlowCoordinator implements Flow.Listener {
     /**
      * Creates and inflates a new child View from a given screen
      */
-    protected View createNewChildView(Blueprint newScreen) {
+    protected View createNewChildView(Screen newScreen) {
         Log.e("asdf", "FlowCoordinator createNewChildView");
         MortarScope myScope = Mortar.getScope(activityContext);
         MortarScope newChildScope = myScope.requireChild(newScreen);
