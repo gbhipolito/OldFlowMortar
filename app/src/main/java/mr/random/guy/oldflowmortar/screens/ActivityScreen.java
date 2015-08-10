@@ -12,9 +12,10 @@ import mortar.Blueprint;
 import mortar.ViewPresenter;
 import mr.random.guy.oldflowmortar.MainModule;
 import mr.random.guy.oldflowmortar.support.FlowCoordinator;
+import mr.random.guy.oldflowmortar.support.Screen;
 import mr.random.guy.oldflowmortar.views.ActivityView;
 
-public class ActivityScreen implements Blueprint {
+public class ActivityScreen extends Screen {
     @Override
     public String getMortarScopeName() {
         Log.e("asdf", "ActivityScreen getMortarScopeName");
