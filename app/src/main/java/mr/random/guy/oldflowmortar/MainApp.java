@@ -34,7 +34,7 @@ public class MainApp extends Application implements CoordinatorHolder {
             Log.e("asdf", "app get flow");
             if(flowCoordinator != null) {
                 Log.e("asdf", "app flow not null");
-                return flowCoordinator.getFlow();
+                return flowCoordinator.get();
             }
         }
 

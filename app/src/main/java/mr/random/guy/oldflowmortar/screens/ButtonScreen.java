@@ -54,30 +54,30 @@ public class ButtonScreen extends Screen {
             Log.e("asdf", "ButtonModule provideButtonPresenter");
             return new ButtonPresenter();
         }
-    }
+    } // end ButtonModule
 
     @Singleton
-    public class ButtonPresenter extends ViewPresenter {
+    public class ButtonPresenter extends ViewPresenter<ButtonView> {
         public ButtonPresenter() {
             Log.e("asdf", "ButtonPresenter constructor: " + this);
         }
 
         public void onButtonClicked() {
-            ((Flow) ((View) getView()).getContext().getSystemService(FlowCoordinator.FLOW_SERVICE)).goTo(new MessageScreen());
+            FlowCoordinator.getFlow(getView()).goTo(new MessageScreen());
         }
 
         @Override
         protected void onEnterScope(MortarScope scope) {
             super.onEnterScope(scope);
             Log.e("asdf", "ButtonPresenter onEnterScope");
-            saveViewState((View)getView());
+            saveViewState(getView());
         }
 
         @Override
         protected void onExitScope() {
             super.onExitScope();
             Log.e("asdf", "ButtonPresenter onExitScope");
-            restoreViewState((View)getView());
+            restoreViewState(getView());
         }
 
         @Override

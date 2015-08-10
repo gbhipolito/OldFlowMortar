@@ -41,7 +41,7 @@ public class ActivityScreen extends Screen {
     }
 
     @Singleton
-    public class ActivityPresenter extends ViewPresenter {
+    public class ActivityPresenter extends ViewPresenter<ActivityView> {
         public ActivityPresenter() {
             Log.e("asdf", "ActivityPresenter constructor: " + this);
         }
