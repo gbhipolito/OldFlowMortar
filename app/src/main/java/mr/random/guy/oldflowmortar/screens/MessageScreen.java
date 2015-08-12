@@ -8,7 +8,9 @@ import flow.Layout;
 import mortar.Blueprint;
 import mr.random.guy.oldflowmortar.R;
 import mr.random.guy.oldflowmortar.support.Screen;
+import mr.random.guy.oldflowmortar.support.Transition;
 
+@Transition({R.animator.scale_fade_in, R.animator.scale_fade_out, R.animator.scale_fade_in, R.animator.scale_fade_out})
 @Layout(R.layout.layout_message)
 public class MessageScreen extends Screen implements HasParent<ButtonScreen> {
 

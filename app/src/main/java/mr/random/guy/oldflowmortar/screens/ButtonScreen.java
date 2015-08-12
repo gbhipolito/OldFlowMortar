@@ -17,8 +17,10 @@ import mr.random.guy.oldflowmortar.R;
 import mr.random.guy.oldflowmortar.support.FlowCoordinator;
 import mr.random.guy.oldflowmortar.MainModule;
 import mr.random.guy.oldflowmortar.support.Screen;
+import mr.random.guy.oldflowmortar.support.Transition;
 import mr.random.guy.oldflowmortar.views.ButtonView;
 
+@Transition({R.animator.scale_fade_in, R.animator.scale_fade_out, R.animator.scale_fade_in, R.animator.scale_fade_out})
 @Layout(R.layout.layout_button)
 public class ButtonScreen extends Screen {
 

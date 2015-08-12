@@ -1,5 +1,7 @@
 package mr.random.guy.oldflowmortar.support;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +22,7 @@ public class FlowCoordinator implements Flow.Listener {
     private final Context activityContext;
     private final Flow flow;
     private ViewGroup containerView;
+    private AnimatorSet screenTransition;
 
     private FlowCoordinator(ViewGroup containerView, Screen firstScreen, Context context) {
         Log.e("asdf", "FlowCoordinator constructor");
@@ -69,10 +72,10 @@ public class FlowCoordinator implements Flow.Listener {
 
     private void showScreen(Screen newScreen, Screen oldScreen, final Flow.Direction direction) {
         Log.e("asdf", "FlowCoordinator showScreen| new: " + newScreen + " old: " + oldScreen + " dir: " + direction);
-//        // Cancel previous transition and set end values
-//        if (screenTransition != null) {
-//            screenTransition.end();
-//        }
+        // Cancel previous transition and set end values
+        if (screenTransition != null) {
+            screenTransition.end();
+        }
 
         final View oldChild = getCurrentChild(containerView);
         Log.e("asdf", "FlowCoordinator showScreen oldChild: " + oldChild);
@@ -81,66 +84,62 @@ public class FlowCoordinator implements Flow.Listener {
 //            storeViewState(oldChild, oldScreen);
             final View newChild = createNewChildView(newScreen);
 
-//            Transitions.Animators transitions = null;
-//            if (oldChild != null) {
-//                switch (direction) {
-//                    case FORWARD:
-//                        // Load animations from Transition annotations, store them into backstack and set them to views
-//                        storeTransitions(oldScreen, newScreen);
-//                        transitions = Transitions.forward(activityContext, newScreen);
-//                        break;
-//                    case BACKWARD:
-//                        if (newScreen instanceof TransitionScreen) {
-//                            // Try to load animations from a screen and set them
-//                            int[] transitionIds = ((TransitionScreen) newScreen).getTransitions();
-//                            transitions = Transitions.backward(activityContext, transitionIds);
-//                        }
-//                        break;
-//                    case REPLACE:
-//                        // no animations
-//                        break;
-//                }
-//            }
-
+            Transitions.Animators transitions = null;
             if (oldChild != null) {
-//                // Settings animator for each view and removing the old view
-//                // after animation ends
-//                if (transitions != null) {
-//                    transitions.out.setTarget(oldChild);
-//                    transitions.in.setTarget(newChild);
-//                    screenTransition = new AnimatorSet();
-//                    screenTransition.playTogether(transitions.out, transitions.in);
-//                    screenTransition.addListener(new SimpleAnimatorListener() {
-//                        @Override
-//                        public void onAnimationEnd(Animator animation) {
-//                            containerView.removeView(oldChild);
-//                        }
-//                    });
-//                } else {
-                // remove view immediately if no transitions to run
-                containerView.removeView(oldChild);
-//                }
+                switch (direction) {
+                    case FORWARD:
+                        // Load animations from Transition annotations, store them into backstack and set them to views
+                        storeTransitions(oldScreen, newScreen);
+                        transitions = Transitions.forward(activityContext, newScreen);
+                        break;
+                    case BACKWARD:
+                        // Try to load animations from a screen and set them
+                        int[] transitionIds = newScreen.getTransitions();
+                        transitions = Transitions.backward(activityContext, transitionIds);
+                        break;
+                    case REPLACE:
+                        // no animations
+                        break;
+                }
+
+                // Settings animator for each view and removing the old view
+                // after animation ends
+                if (transitions != null) {
+                    transitions.out.setTarget(oldChild);
+                    transitions.in.setTarget(newChild);
+                    screenTransition = new AnimatorSet();
+                    screenTransition.playTogether(transitions.out, transitions.in);
+                    screenTransition.addListener(new SimpleAnimatorListener() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            containerView.removeView(oldChild);
+                        }
+                    });
+                } else {
+                    // remove view immediately if no transitions to run
+                    containerView.removeView(oldChild);
+                }
             } // end if(oldChild != null)
 
             containerView.addView(newChild, 0);
 
-//            if (screenTransition != null) {
-//                screenTransition.start();
-//            }
+            if (screenTransition != null) {
+                screenTransition.start();
+            }
 
-//            // Makes the new view z-index higher than the old view
-//            // for transitions forward to make feel more natural
-//            if (direction == Flow.Direction.FORWARD) {
-//                containerView.post(new Runnable() {
-//                    @Override public void run() {
-//                        containerView.bringChildToFront(newChild);
-//                        containerView.requestLayout();
-//                        containerView.invalidate();
-//                    }
-//                });
-//            }
+            // Makes the new view z-index higher than the old view
+            // for transitions forward to make feel more natural
+            if (direction == Flow.Direction.FORWARD) {
+                containerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        containerView.bringChildToFront(newChild);
+                        containerView.requestLayout();
+                        containerView.invalidate();
+                    }
+                });
+            }
         } // end if(destroyOldScope(newScreen, oldChild))
-
     } // end showScreen
 
     protected View getCurrentChild(final ViewGroup containerView) {
@@ -189,11 +188,20 @@ public class FlowCoordinator implements Flow.Listener {
         return ScreenInflater.createView(childContext, newScreen, containerView);
     }
 
+    /**
+     * Store transitions that were used from one screen to another
+     */
+    private void storeTransitions(Screen oldScreen, Screen newScreen) {
+        if (oldScreen != null) {
+            oldScreen.setTransitions(Transitions.getTransitionResources(newScreen.getClass()));
+        }
+    }
+
     public Flow get() {
         return flow;
     }
 
     public static Flow getFlow(View view) {
-        return (Flow)view.getContext().getSystemService(FlowCoordinator.FLOW_SERVICE);
+        return (Flow) view.getContext().getSystemService(FlowCoordinator.FLOW_SERVICE);
     }
 } // end FlowCoordinator
